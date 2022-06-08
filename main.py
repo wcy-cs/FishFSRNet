@@ -1,12 +1,12 @@
+from option import args
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_name
 import torch
 import torch.optim as optim
 import torch.nn as nn
 from data import dataset
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from option import args
 import util
 from model import reduce
 
