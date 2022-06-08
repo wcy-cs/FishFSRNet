@@ -236,10 +236,8 @@ class PCSR1(nn.Module):
         self.conv_parsing = nn.Sequential(
             *[nn.Conv2d(in_channels=3, out_channels=n_feats, kernel_size=3, stride=1, padding=1),
               act])
-        if multi:
-            self.conv_fusion = MUL(conv, n_feats * 2, n_feats)
-        else:
-            self.conv_fusion = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=3, stride=1,
+
+        self.conv_fusion = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=3, stride=1,
                                          padding=1)
         self.attention_fusion = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=1, stride=1)
 
