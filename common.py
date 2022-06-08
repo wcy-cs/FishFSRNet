@@ -206,8 +206,7 @@ class Multi_scale_fusion_block(nn.Module):
 
 
 class PCSR1(nn.Module):
-    def __init__(self, conv, n_feats, kernel_size, bias=True, act=nn.ReLU(True), res_scale=1, gama=2, lamb=4,
-                 multi=True, spatial=True):
+    def __init__(self, conv, n_feats, kernel_size, bias=True, act=nn.ReLU(True), res_scale=1, gama=2, lamb=4):
         super(PCSR1, self).__init__()
         # First branch
         m = []
@@ -216,16 +215,12 @@ class PCSR1(nn.Module):
                 m.append(conv(n_feats, n_feats, kernel_size, bias=bias))
                 m.append(act)
             if i == 1:
-                if multi:
-                    m.append(MUL(conv, n_feats, n_feats))
-                else:
-                    m.append(conv(n_feats, n_feats, kernel_size, bias=bias))
+                m.append(conv(n_feats, n_feats, kernel_size, bias=bias))
 
         self.body = nn.Sequential(*m)
-        if spatial:
-            self.attention_layer1 = cbam.CSAR_SpatialGate(n_feats, gama=gama)
-        else:
-            self.attention_layer1 = cbam.CSAR_SpatialGate1(n_feats, gama=gama)
+        
+        self.attention_layer1 = cbam.CSAR_SpatialGate(n_feats, gama=gama)
+        
         self.attention_layer2 = cbam.ChannelGate(n_feats, reduction_ratio=lamb, pool_types=['avg', 'max', 'var'])
         self.conv = conv(2 * n_feats, n_feats, 1, bias=bias)
         self.res_scale = res_scale
