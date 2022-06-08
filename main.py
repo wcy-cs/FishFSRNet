@@ -51,20 +51,20 @@ for i in range(epochs):
     net.eval()
     val_psnr = 0
     val_ssim = 0
-    val_psnr_my = 0
+
     os.makedirs(os.path.join(args.save_path, args.writer_name, 'result'), exist_ok=True)
     for batch, (lr, hr, filename) in enumerate(valset):
         lr, hr = util.prepare(lr), util.prepare(hr)
         sr = net(lr)
-        val_psnr_my = val_psnr_my + util.cal_psnr(hr[0].data.cpu(), sr[0].data.cpu())            
+                 
         psnr_c, ssim_c = util.calc_metrics(hr[0].data.cpu(), sr[0].data.cpu())
         val_psnr = val_psnr + psnr_c
         val_ssim = val_ssim + ssim_c
     print("Epoch：{} val  psnr: {:.3f}".format(i + 1, val_psnr / (len(valset))))
 
-    writer.add_scalar("val_psnr_DIC", val_psnr / len(valset), i + 1)
-    writer.add_scalar("val_ssim_DIC", val_ssim / len(valset), i + 1)
-    writer.add_scalar("val_psnr_my", val_psnr_my / len(valset), i + 1)
+    writer.add_scalar("val_psnr", val_psnr / len(valset), i + 1)
+    writer.add_scalar("val_ssim", val_ssim / len(valset), i + 1)
+
 
 
 
