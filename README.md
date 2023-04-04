@@ -1,7 +1,7 @@
 # FishFSRNet
 Code for paper "Super-Resolving Face Image by Facial Parsing Information"
 
-![image](https://github.com/wcy-cs/FishFSRNet/blob/main/Enhance_fishsrnet2.pdf)
+![image](https://github.com/wcy-cs/FishFSRNet/blob/main/fishfsrnet.png)
 
 ## Citation 
 ```
