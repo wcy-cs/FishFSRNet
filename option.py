@@ -29,10 +29,12 @@ parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 parser.add_argument('--augment', action='store_true',
                     help='use data augmentation')
-parser.add_argument('--large_parsing', action="store_true",
-                    help='Coor')
+parser.add_argument('--PCSR1', action="store_true",
+                    help='PCSR1')
+parser.add_argument('--refine2', action="store_true",
+                    help='refine2')
 # Model specifications
-parser.add_argument('--model', default='AWNET',
+parser.add_argument('--model', default='fishfsrnet',
                     help='model name')
 parser.add_argument('--act', type=str, default='relu',
                     help='activation function')
@@ -65,7 +67,7 @@ parser.add_argument('--load', type=str, default='',
                     help='file name to load')
 
 
-parser.add_argument("--writer_name", type=str, default="mynet",
+parser.add_argument("--writer_name", type=str, default="fishfsrnet",
                     help="the name of the writer")
 
 args = parser.parse_args()
