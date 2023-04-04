@@ -1,10 +1,10 @@
-import model.common as common
+import common
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
 
 
-def fish_block(args, conv=common.default_conv, n_feats=64, multi_scale=False,PCSR1=False):
+def fish_block(args, conv=common.default_conv, n_feats=64, PCSR1=False):
     kernel_size = 3
     res = []
     act = nn.ReLU(True)
@@ -12,29 +12,15 @@ def fish_block(args, conv=common.default_conv, n_feats=64, multi_scale=False,PCS
 
     if PCSR1:
         res.append(common.PCSR1(
-            conv, n_feats, kernel_size, act=act, res_scale=args.res_scale, multi=multi_scale
+            conv, n_feats, kernel_size, act=act, res_scale=args.res_scale
         ))
         res.append(common.PCSR1(
-            conv, n_feats, kernel_size, act=act, res_scale=args.res_scale, multi=multi_scale
+            conv, n_feats, kernel_size, act=act, res_scale=args.res_scale
         ))
     else:
         res.append(common.ResBlock(conv, n_feats, kernel_size, act=act, res_scale=args.res_scale))
         res.append(common.ResBlock(conv, n_feats, kernel_size, act=act, res_scale=args.res_scale))
     return res
-
-
-class ldfishnet(nn.Module):
-    def __init__(self, args, pretrained_ld=False):
-        super(ldfishnet, self).__init__()
-        self.parsing = LD(args)
-        if pretrained_ld:
-            self.parsing.load_state_dict(torch.load('./model/parsingNet.pth'))
-        self.sr = FISHNET(args)
-
-    def forward(self, x):
-        p = self.parsing(x)
-        sr = self.sr(x, p)
-        return sr
 
 
 
@@ -48,8 +34,6 @@ class FISHNET(nn.Module):
         scale = 8
         act = nn.ReLU(True)
         self.args = args
-        self.sub_mean = common.MeanShift(args.rgb_range)
-        self.add_mean = common.MeanShift(args.rgb_range, sign=1)
 
         # define head module
         m_head = [conv(args.n_colors, n_feats, kernel_size)]
@@ -66,28 +50,28 @@ class FISHNET(nn.Module):
         self.up1 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
 
         self.up_stage1 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi, PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats, PCSR1=args.PCSR1))
         self.up2 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
 
         self.up_stage2 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi, PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats, PCSR1=args.PCSR1))
         self.up3 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
 
         self.up_stage3 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi,  PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats,  PCSR1=args.PCSR1))
 
         self.down1 = nn.Sequential(*common.invUpsampler(conv, 2, n_feats, act=False))
 
         self.down_stage1 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi,PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats, PCSR1=args.PCSR1))
         self.down2 = nn.Sequential(*common.invUpsampler(conv, 2, n_feats, act=False))
 
         self.down_stage2 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi, PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats, PCSR1=args.PCSR1))
         self.down3 = nn.Sequential(*common.invUpsampler(conv, 2, n_feats, act=False))
 
         self.down_stage3 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi, PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats,  PCSR1=args.PCSR1))
 
         self.conv_tail1 = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=1, stride=1)
         self.conv = conv(n_feats, n_feats, 3)
@@ -95,15 +79,15 @@ class FISHNET(nn.Module):
 
         self.conv_tail2 = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=1, stride=1)
         self.up2_stage1 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi, PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats, PCSR1=args.PCSR1))
         self.up22 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))  # n_feats*3
 
         self.up2_stage2 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi, PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats, PCSR1=args.PCSR1))
         self.up23 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
         self.conv_tail3 = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=1, stride=1)
         self.up2_stage3 = nn.Sequential(
-            *fish_block(args, n_feats=args.n_feats, multi_scale=args.multi,  PCSR1=args.PCSR1))
+            *fish_block(args, n_feats=args.n_feats, PCSR1=args.PCSR1))
 
         # define tail module
         m_tail = [
