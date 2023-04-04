@@ -4,11 +4,11 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_name
 import torch
 import torch.optim as optim
 import torch.nn as nn
-from data import data_parsing
+import dataset_parsing
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import util
-from model.fishfsrnet import FISHNET
+from fishfsrnet import FISHNET
 
 
 
@@ -17,13 +17,13 @@ net = util.prepare(net)
 # print(net)
 
 writer = SummaryWriter('./logs/{}'.format(args.writer_name))
-traindata = data_parsing.Data(root=os.path.join(args.dir_data, args.data_train), args=args, train=True)
+traindata = dataset_parsing.Data(root=os.path.join(args.dir_data, args.data_train), args=args, train=True)
 trainset = DataLoader(traindata, batch_size=args.batch_size, shuffle=True, num_workers=16)
 
-valdata = data_parsing.Data(root=os.path.join(args.dir_data, args.data_val), args=args, train=False)
+valdata = dataset_parsing.Data(root=os.path.join(args.dir_data, args.data_val), args=args, train=False)
 valset = DataLoader(valdata, batch_size=1, shuffle=False, num_workers=1)
 
-testdata = data_parsing.Data(root=os.path.join(args.dir_data, args.data_test), args=args, train=False)
+testdata = dataset_parsing.Data(root=os.path.join(args.dir_data, args.data_test), args=args, train=False)
 testset = DataLoader(testdata, batch_size=1, shuffle=False, num_workers=1)
 
 
