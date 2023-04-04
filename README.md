@@ -16,3 +16,5 @@ Code for paper "Super-Resolving Face Image by Facial Parsing Information"
   doi={10.1109/TBIOM.2023.3264223}}
 ```
  
+## Results
+ [BaiDu](https://pan.baidu.com/s/1wll2RrhpT6oXrh-66HkenA) passward: nvg1
