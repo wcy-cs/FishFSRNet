@@ -2,7 +2,6 @@
 Code for paper "Super-Resolving Face Image by Facial Parsing Information"
 
 
-The code will be available soon
 
 ## Citation 
 ```
@@ -16,3 +15,4 @@ The code will be available soon
   pages={1-1},
   doi={10.1109/TBIOM.2023.3264223}}
 ```
+ 
