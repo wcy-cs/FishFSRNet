@@ -18,8 +18,6 @@ traindata = dataset_parsingnet.Data(root=os.path.join(args.dir_data, args.data_t
 trainset = DataLoader(traindata, batch_size=args.batch_size, shuffle=True, num_workers=16)
 valdata = dataset_parsingnet.Data(root=os.path.join(args.dir_data, args.data_val), args=args, train=False)
 valset = DataLoader(valdata, batch_size=1, shuffle=False, num_workers=1)
-testdata = dataset_parsingnet.Data(root=os.path.join(args.dir_data, args.data_train), args=args, train=False)
-testset = DataLoader(testdata, batch_size=1, shuffle=False, num_workers=1)
 
 criterion1 = nn.L1Loss()
 optimizer = optim.Adam(params=net.parameters(), lr=args.lr, betas=(0.9, 0.99), eps=1e-8)
@@ -53,14 +51,4 @@ for i in range(args.epochs):
 
     print("Epoch：{} val  psnr: {:.3f}".format(i + 1, val_psnr_my / (len(valset))))
     writer.add_scalar("val_psnr_my", val_psnr_my / len(valset), i + 1)
-    os.makedirs(os.path.join(args.save_path, args.writer_name, 'result-test'), exist_ok=True)
-    test_psnr_my = 0
-    for batch, (lr, hr, filename) in enumerate(testset):
-        lr, hr = util.prepare(lr), util.prepare(hr)
-        sr = net(lr)
-        test_psnr_my = test_psnr_my + util.cal_psnr(hr[0].data.cpu(), sr[0].data.cpu())
-        torchvision.utils.save_image(sr[0],
-                                     os.path.join(args.save_path, args.writer_name, 'result-test',
-                                                  '{}'.format(str(filename[0]))))
-    print("Epoch：{} test psnr: {:.3f}".format(i + 1, test_psnr_my / (len(testset))))
-    writer.add_scalar("test_psnr_my", test_psnr_my / len(testset), i + 1)
+
