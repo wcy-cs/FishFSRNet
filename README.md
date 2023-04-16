@@ -22,10 +22,11 @@ Code for paper "Super-Resolving Face Image by Facial Parsing Information"
 
 ## Training
 The training stage includes two stages:
+
 i) Train ParsingNet. Enter parsing folder and then use main_parsingnet,py to train the model,
-···
+```
 python main_parsingnet.py --writer_name parsingnet --dir_data data_path 
-···
+```
 After training the ParsingNet, we use the pretrained ParsingNet to generate facial parsing,
 ```
 python test_parsingnet.py --writer_name the_path_you_want_to_save_results
