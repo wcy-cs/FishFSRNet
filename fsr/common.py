@@ -201,9 +201,64 @@ class Multi_scale_fusion_block(nn.Module):
 
 
 
+class CA(nn.Module):
+    def __init__(self, conv, n_feats, kernel_size, bias=True, bn=False, act=nn.ReLU(True), res_scale=1, gama=2, lamb=4,
+                 multi=True, spatial=True):
 
+        super(CA, self).__init__()
+        m = []
+        for i in range(2):
+            if i == 0:
+                m.append(conv(n_feats, n_feats, kernel_size, bias=bias))
+                m.append(act)
+            if i == 1:
+                if multi:
+                    m.append(MUL_small(conv, n_feats))
+                else:
+                    m.append(conv(n_feats, n_feats, kernel_size, bias=bias))
 
+        # m.append(conv(n_feats, n_feats, kernel_size, bias=bias))
+        self.body = nn.Sequential(*m)
+        self.attention_layer2 = cbam.ChannelGate(n_feats, reduction_ratio=lamb, pool_types=['avg', 'max', 'var'])
 
+        # self.attention = atten(conv, n_feats)
+        self.res_scale = res_scale
+
+    def forward(self, x):
+        res = self.body(x)
+        res = self.attention_layer2(res)
+
+        res += x
+
+        return res
+
+class MUL_small(nn.Module):
+    def __init__(self, conv, n_feats, bias=True):
+
+        super(MUL_small, self).__init__()
+        self.n_feats = n_feats
+        self.conv1 = conv(n_feats//4, n_feats//4, 1, bias=bias)
+        self.conv3 = conv(n_feats//4, n_feats//4, 3, bias=bias)
+        self.conv5 = conv(n_feats//4, n_feats//4, 5, bias=bias)
+        self.conv7 = conv(n_feats//4, n_feats//4, 7, bias=bias)
+
+    def forward(self, x):
+        le = self.n_feats//4
+        x1 = x[:, :le, :, :]
+        x2 = x[:, le:le*2, :, :]
+        x3 = x[:, le*2:le*3, :, :]
+        x4 = x[:, le*3:, :, :]
+        # print(x1.shape)
+        # print(x2.shape)
+        # print(x3.shape)
+        # print(x4.shape)
+        res1 = self.conv1(x1)
+        res3 = self.conv3(x2)
+        res5 = self.conv5(x3)
+        res7 = self.conv7(x4)
+        res = torch.cat((res1, res3, res5, res7), 1)
+
+        return res
 
 class PCSR1(nn.Module):
     def __init__(self, conv, n_feats, kernel_size, bias=True, act=nn.ReLU(True), res_scale=1, gama=2, lamb=4):
@@ -254,3 +309,94 @@ class PCSR1(nn.Module):
         res += x
 
         return res
+
+class Multi_scale_fusion_block4(nn.Module):
+    def __init__(self, n_feats, scale):
+        super(Multi_scale_fusion_block4, self).__init__()
+        self.scale = scale
+        if scale ==2:
+            self.down1 = nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1)
+        elif scale == 4:
+            self.up1 = nn.UpsamplingNearest2d(scale_factor=2)
+
+        self.refine2 = Refine(n_feats)
+        self.refine4 = Refine(n_feats)
+        self.attention = CA(conv=default_conv, n_feats=n_feats, kernel_size=1)
+        self.conv = nn.Conv2d(in_channels=n_feats*2, out_channels=n_feats, kernel_size=1)
+    def forward(self, scale2, scale4, now):
+        if self.scale ==2:
+            scale4 = self.down1(scale4)
+        elif self.scale == 4:
+            scale2 = self.up1(scale2)
+        feature1 = self.refine2(scale2, now)
+        feature2 = self.refine4(scale4, now)
+
+        fea = torch.cat((feature1, feature2),1)
+        fea = self.conv(fea)
+        fea = self.attention(fea)
+        fea = fea + now
+        return fea
+class Multi_scale_fusion_block16(nn.Module):
+    def __init__(self, n_feats, scale):
+        super(Multi_scale_fusion_block16, self).__init__()
+        self.scale = scale
+        if scale ==2:
+            self.down1 = nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1)
+            self.down2 = nn.Sequential(*[nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1),
+                                         nn.ReLU(True),
+                                         nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1)])
+            self.down3 = nn.Sequential(*[nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1),
+                                         nn.ReLU(True),
+                                         nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1),
+                                         nn.ReLU(True),
+                                         nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2,
+                                                   padding=1)
+                                         ])
+        elif scale == 4:
+            self.down1 = nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1)
+            self.up1 = nn.UpsamplingNearest2d(scale_factor=2)
+            self.down2 = nn.Sequential(
+                *[nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1),
+                  nn.ReLU(True),
+                  nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1)])
+        elif scale == 8:
+            self.up1 = nn.UpsamplingNearest2d(scale_factor=2)
+            self.up2 = nn.UpsamplingNearest2d(scale_factor=4)
+            self.down1 = nn.Conv2d(in_channels=n_feats, out_channels=n_feats, kernel_size=3, stride=2, padding=1)
+        elif scale == 16:
+            self.up1 = nn.UpsamplingNearest2d(scale_factor=2)
+            self.up2 = nn.UpsamplingNearest2d(scale_factor=4)
+            self.up3 = nn.UpsamplingNearest2d(scale_factor=8)
+        self.refine2 = Refine(n_feats)
+        self.refine4 = Refine(n_feats)
+        self.refine8 = Refine(n_feats)
+        self.refine16 = Refine(n_feats)
+        self.attention = CA(conv=default_conv, n_feats=n_feats, kernel_size=1)
+        self.conv = nn.Conv2d(in_channels=n_feats*4, out_channels=n_feats, kernel_size=1)
+    def forward(self, scale2, scale4, scale8, scale16, now):
+        if self.scale ==2:
+            scale4 = self.down1(scale4)
+            scale8 = self.down2(scale8)
+            scale16 = self.down2(scale16)
+        elif self.scale == 4:
+            scale8 = self.down1(scale8)
+            scale2 = self.up1(scale2)
+            scale16 = self.down2(scale16)
+        elif self.scale ==8:
+            scale4 = self.up1(scale4)
+            scale2 = self.up2(scale2)
+            scale16 = self.down1(scale16)
+        elif self.scale == 16:
+            scale4 = self.up1(scale4)
+            scale2 = self.up2(scale2)
+            scale16 = self.up3(scale16)
+
+        feature1 = self.refine2(scale2, now)
+        feature2 = self.refine4(scale4, now)
+        feature3 = self.refine8(scale8, now)
+        feature4 = self.refine8(scale16, now)
+        fea = torch.cat((feature1, feature2, feature3, feature4),1)
+        fea = self.conv(fea)
+        fea = self.attention(fea)
+        fea = fea + now
+        return fea
