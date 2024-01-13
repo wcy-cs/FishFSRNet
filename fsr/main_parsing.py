@@ -8,13 +8,17 @@ import dataset_parsing
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import util
-from fishfsrnet import FISHNET
+import fishfsrnet,fishfsrnet_x4,fishfsrnet_x16
 
+if args.scale == 4:
+    net = fishfsrnet_x4.FISHNET(args)
+elif args.scale ==8:
+    net = fishfsrnet.FISHNET(args)
+elif args.scale ==16:
+    net = fishfsrnet_x16.FISHNET(args)
 
-
-net = FISHNET(args)
 net = util.prepare(net)
-# print(net)
+
 
 writer = SummaryWriter('./logs/{}'.format(args.writer_name))
 traindata = dataset_parsing.Data(root=os.path.join(args.dir_data, args.data_train), args=args, train=True)
