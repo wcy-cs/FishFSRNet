@@ -43,15 +43,15 @@ class FISHNET(nn.Module):
                                           ])
         # define body module
 
-        self.up1 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
+        self.up1 = nn.Sequential(*common.Upsampler(2, n_feats))
 
         self.up_stage1 = nn.Sequential(
             *fish_block(args))
-        self.up2 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
+        self.up2 = nn.Sequential(*common.Upsampler(2, n_feats))
 
         self.up_stage2 = nn.Sequential(
             *fish_block(args))
-        self.up3 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
+        self.up3 = nn.Sequential(*common.Upsampler(2, n_feats))
 
         self.up_stage3 = nn.Sequential(
             *fish_block(args))
@@ -71,16 +71,16 @@ class FISHNET(nn.Module):
 
         self.conv_tail1 = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=1, stride=1)
         self.conv = conv(n_feats, n_feats, 3)
-        self.up21 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
+        self.up21 = nn.Sequential(*common.Upsampler(2, n_feats))
 
         self.conv_tail2 = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=1, stride=1)
         self.up2_stage1 = nn.Sequential(
             *fish_block(args))
-        self.up22 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))  # n_feats*3
+        self.up22 = nn.Sequential(*common.Upsampler(2, n_feats))  # n_feats*3
 
         self.up2_stage2 = nn.Sequential(
             *fish_block(args))
-        self.up23 = nn.Sequential(*common.Upsampler(conv, 2, n_feats, act=False))
+        self.up23 = nn.Sequential(*common.Upsampler(2, n_feats))
         self.conv_tail3 = nn.Conv2d(in_channels=n_feats * 2, out_channels=n_feats, kernel_size=1, stride=1)
         self.up2_stage3 = nn.Sequential(
             *fish_block(args))
