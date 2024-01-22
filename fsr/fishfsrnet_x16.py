@@ -60,18 +60,18 @@ class FISHNET(nn.Module):
 
         self.up_stage4 = nn.Sequential(*fish_block(args))
 
-        self.down4 = nn.Sequential(*[common.invUpsampler(conv, 2, n_feats, act=False)])
+        self.down4 = nn.Sequential(*[common.invUpsampler_module(2, n_feats, act=False)])
 
         self.down_stage4 = nn.Sequential(*fish_block(args))
 
 
-        self.down1 = nn.Sequential(*[common.invUpsampler(conv, 2, n_feats, act=False)])
+        self.down1 = nn.Sequential(*[common.invUpsampler_module(2, n_feats, act=False)])
 
         self.down_stage1 = nn.Sequential(*fish_block(args))
-        self.down2 = nn.Sequential(*[common.invUpsampler(conv, 2, n_feats, act=False)])
+        self.down2 = nn.Sequential(*[common.invUpsampler_module(2, n_feats, act=False)])
 
         self.down_stage2 = nn.Sequential(*fish_block(args))
-        self.down3 = nn.Sequential(*[common.invUpsampler(conv, 2, n_feats, act=False)])
+        self.down3 = nn.Sequential(*[common.invUpsampler_module(2, n_feats, act=False)])
 
         self.down_stage3 = nn.Sequential(*fish_block(args))
 
