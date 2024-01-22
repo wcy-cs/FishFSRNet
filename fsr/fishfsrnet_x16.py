@@ -47,16 +47,16 @@ class FISHNET(nn.Module):
                                           ])
         # define body module
 
-        self.up1 = nn.Sequential(*[common.Upsampler(conv, 2, n_feats, act=False)])
+        self.up1 = nn.Sequential(*[common.Upsampler(2, n_feats)])
 
         self.up_stage1 = nn.Sequential(*fish_block(args))
-        self.up2 = nn.Sequential(*[common.Upsampler(conv, 2, n_feats, act=False)])
+        self.up2 = nn.Sequential(*[common.Upsampler(2, n_feats)])
 
         self.up_stage2 = nn.Sequential(*fish_block(args))
-        self.up3 = nn.Sequential(*[common.Upsampler(conv, 2, n_feats, act=False)])
+        self.up3 = nn.Sequential(*[common.Upsampler( 2, n_feats)])
 
         self.up_stage3 = nn.Sequential(*fish_block(args))
-        self.up4 = nn.Sequential(*[common.Upsampler(conv, 2, n_feats, act=False)])
+        self.up4 = nn.Sequential(*[common.Upsampler(2, n_feats)])
 
         self.up_stage4 = nn.Sequential(*fish_block(args))
 
