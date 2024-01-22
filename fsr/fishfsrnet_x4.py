@@ -51,11 +51,11 @@ class FISHNET(nn.Module):
         self.up_stage2 = nn.Sequential(*fish_block(args
                                                    ))
 
-        self.down2 = common.invUpsampler(conv, 2, n_feats, act=False)
+        self.down2 = common.invUpsampler_module(2, n_feats, act=False)
 
         self.down_stage2 = nn.Sequential(*fish_block(args
                                                      ))
-        self.down3 = common.invUpsampler(conv, 2, n_feats, act=False)
+        self.down3 = common.invUpsampler_module(2, n_feats, act=False)
 
         self.down_stage3 = nn.Sequential(*fish_block(args
                                                      ))
