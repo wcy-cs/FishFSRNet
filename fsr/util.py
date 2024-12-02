@@ -71,8 +71,8 @@ def calc_metrics(img1, img2, crop_border=8, test_Y=True):
 def calc_psnr(img1, img2):
     # img1 and img2 have range [0, 255]
     #
-    img1 = img1.astype(np.float64)
-    img2 = img2.astype(np.float64)
+    img1 = img1.cpu().numpy().astype(np.float64)
+    img2 = img2.cpu().numpy().astype(np.float64)
     img1_np = np.array(img1)
     img2_np = np.array(img2)
     mse = np.mean((img1_np - img2_np)**2)
