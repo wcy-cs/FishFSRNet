@@ -24,7 +24,7 @@ val_ssim = 0
 with torch.no_grad():
     os.makedirs(os.path.join(args.save_path, args.writer_name, 'result-test'), exist_ok=True)
     net.eval()
-    timer_test = util.timer()
+
     for batch, (lr, _, filename) in enumerate(testset):
         lr = util.prepare(lr)
         p = net(lr)
