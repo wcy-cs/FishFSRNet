@@ -11,7 +11,7 @@ import torchvision
 import parsingnet
 net = parsingnet.ParsingNet()
 net = util.prepare(net)
-print(util.get_parameter_number(net))
+
 writer = SummaryWriter('./logs/{}'.format(args.writer_name))
 testdata = dataset_parsingnet.Data(root=os.path.join(args.dir_data, args.data_test), args=args, train=False)
 testset = DataLoader(testdata, batch_size=1, shuffle=False, num_workers=1)
