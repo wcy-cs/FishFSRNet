@@ -47,7 +47,7 @@ for i in range(args.epochs):
     for batch, (lr, hr, filename) in enumerate(valset):
         lr, hr = util.prepare(lr), util.prepare(hr)
         sr = net(lr)
-        val_psnr_my = val_psnr_my + util.cal_psnr(hr[0].data.cpu(), sr[0].data.cpu())
+        val_psnr_my = val_psnr_my + util.calc_psnr(hr[0].data.cpu(), sr[0].data.cpu())
 
     print("Epoch：{} val  psnr: {:.3f}".format(i + 1, val_psnr_my / (len(valset))))
     writer.add_scalar("val_psnr_my", val_psnr_my / len(valset), i + 1)
